@@ -1,4 +1,9 @@
 # Virtual Camera Sample #
+
+> Meet Gesture FX uses this sample as its Windows 11 virtual-camera
+> foundation. See [MEET_GESTURE_FX.md](MEET_GESTURE_FX.md) for the first
+> processed-frame milestone and exact bring-up steps.
+
 ### Requirement:
 - Minimum OS version: Windows 11 (10.0.22000.0)
 - Windows SDK minimum version: [10.0.22000.0](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)

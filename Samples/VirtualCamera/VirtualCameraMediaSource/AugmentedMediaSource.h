@@ -89,7 +89,9 @@ namespace winrt::WindowsSample::implementation
         _Requires_lock_held_(m_Lock) HRESULT OnSourceStopped(IMFMediaEvent* pEvent);
 
         // DDI handlers
-        bool m_isCustomFXEnabled = false;
+        // Enabled by default for the Meet Gesture FX bring-up milestone. The
+        // existing KS property can still turn this processing off at runtime.
+        bool m_isCustomFXEnabled = true;
 
         wil::com_ptr_nothrow<CAsyncCallback<AugmentedMediaSource>> m_xOnMediaSourceEvent;
 

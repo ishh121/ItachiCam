@@ -5,6 +5,66 @@
 #include "wtsapi32.h"
 #include "userenv.h"
 
+namespace
+{
+    const GUID kWindowsStudioCameraControlPropertySet =
+    { 0x1666d655, 0x21a6, 0x4982, { 0x97, 0x28, 0x52, 0xc3, 0x9e, 0x86, 0x9f, 0x90 } };
+    constexpr ULONG kWindowsStudioFaceMetadataProperty = 5;
+    constexpr ULONGLONG kWindowsStudioFaceLandmarksFlag = 0x2;
+
+    void TryEnableFaceLandmarksMetadata(_In_ IMFMediaSource* mediaSource)
+    {
+        if (mediaSource == nullptr) return;
+
+        wil::com_ptr_nothrow<IKsControl> ksControl;
+        if (FAILED(mediaSource->QueryInterface(IID_PPV_ARGS(&ksControl)))) return;
+
+        KSPROPERTY property{
+            kWindowsStudioCameraControlPropertySet,
+            kWindowsStudioFaceMetadataProperty,
+            KSPROPERTY_TYPE_GET };
+        struct FaceMetadataPayload
+        {
+            KSCAMERA_EXTENDEDPROP_HEADER header;
+            KSCAMERA_EXTENDEDPROP_VALUE value;
+        } payload = {};
+        ULONG returned = 0;
+        HRESULT hr = ksControl->KsProperty(
+            &property,
+            sizeof(property),
+            &payload,
+            sizeof(payload),
+            &returned);
+        if (FAILED(hr) || (payload.header.Capability & kWindowsStudioFaceLandmarksFlag) == 0)
+        {
+            DEBUG_MSG(L"Windows Studio face landmarks unavailable; using pixel fallback");
+            return;
+        }
+
+        payload.header.Version = 1;
+        payload.header.PinId = KSCAMERA_EXTENDEDPROP_FILTERSCOPE;
+        payload.header.Size = sizeof(payload);
+        payload.header.Result = 0;
+        payload.header.Flags = kWindowsStudioFaceLandmarksFlag;
+        payload.header.Capability = 0;
+        property.Flags = KSPROPERTY_TYPE_SET;
+        hr = ksControl->KsProperty(
+            &property,
+            sizeof(property),
+            &payload,
+            sizeof(payload),
+            &returned);
+        if (SUCCEEDED(hr))
+        {
+            DEBUG_MSG(L"Windows Studio face landmarks enabled");
+        }
+        else
+        {
+            DEBUG_MSG(L"Windows Studio face landmarks enable failed: 0x%08x", hr);
+        }
+    }
+}
+
 namespace winrt::WindowsSample::implementation
 {
     AugmentedMediaSource::~AugmentedMediaSource()
@@ -35,6 +95,7 @@ namespace winrt::WindowsSample::implementation
 
         RETURN_HR_IF_NULL(E_POINTER, pMediaSource);
         m_spDevSource = pMediaSource;
+        TryEnableFaceLandmarksMetadata(m_spDevSource.get());
 
         // 1. Populate source attributes like profile and control app
         RETURN_IF_FAILED(_CreateSourceAttributes(pAttributes));

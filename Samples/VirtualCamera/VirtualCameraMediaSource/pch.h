@@ -2,6 +2,8 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //
 #pragma once
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <unknwn.h>
 #include <windows.h>
 #include <propvarutil.h>
@@ -49,6 +51,7 @@
 #pragma comment(lib, "windowsapp")
 #pragma comment(lib, "mfplat")
 #pragma comment(lib, "Mfsensorgroup")
+#pragma comment(lib, "Ws2_32.lib")
 
 inline void DebugPrint(LPCWSTR szFormat, ...)
 {

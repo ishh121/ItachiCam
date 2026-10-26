@@ -192,6 +192,8 @@ _pkginfo.txt
 
 # Others
 ClientBin/
+/.venv-eye-worker/
+Tools/MeetGestureFX/models/*.task
 ~$*
 *~
 *.dbmdl
